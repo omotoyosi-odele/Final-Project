@@ -1,0 +1,45 @@
+.navbar {
+    background-color: white;;
+    border-bottom: grey;
+    border-bottom-style: solid;
+    padding-bottom: 10px;
+}
+
+a h1 .navbar-brand{
+    padding-bottom: 10px;
+}
+
+.Pages {
+    background: url("https://i.pinimg.com/564x/27/5a/05/275a053e912c860102cbc4652d70e3bc.jpg");
+    background-size: fixed;
+    background-repeat: repeat;
+    background-color: rgba(255,255,255,0.6);
+}
+
+.box {
+    padding-left: 300px;
+    padding-top: 150px;
+}
+
+li .nav-link{
+    color: ivory;
+}
+/* Media Queries  */
+@media(max-width: 650px){
+    .Pages {
+        background: url("https://i.pinimg.com/564x/27/5a/05/275a053e912c860102cbc4652d70e3bc.jpg") no-repeat center center fixed;
+        -webkit-background-size: cover;
+        -moz-background-size: cover;
+        -o-background-size: cover;
+        background-size: cover;
+    }
+    .navbar-expand-lg{
+        background-color: whitesmoke!important;
+    }
+
+    .navbar {
+        max-height: none;
+        padding: inherit;
+        color: rgb(227, 238, 247);
+    }
+};

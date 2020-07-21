@@ -20,13 +20,13 @@ Base = automap_base()
 Base.prepare(engine, reflect=True)
 
 # Save reference to the table
-plot_model = Base.classes.omdb
+omdb = Base.classes.omdb
 
 app = Flask(__name__)
 
-""" @app.route("/")
+@app.route("/")
 def welcome():
-    return  '' """
+    return render_template("index.html")
 
 @app.route("/api/v1.0/genre-form", methods = ['POST'])
 def get_genre():
@@ -44,18 +44,23 @@ def get_genre_json():
 
     # if the plot is not none, send the plot to the machine learning part application
     plot = None
-    if 'plot' in plot_json:
+    if 'plot' in plot_json and plot_json['plot'] != "":
         plot = plot_json['plot']
     else:
-        return 'Please enter a movie plot'
+        return {'error': 'Please enter a movie plot'}, 400
     # get the result and send it to the user
     return dummy.ml_dummy(plot)
 
 
-@app.route("/api/v1.0/count-plot")
+@app.route("/api/v1.0/genre-count")
 def genre_count():
 
-    count = {
+    session = Session(engine)
+    results = session.query(omdb.drama,omdb.comedy,omdb.action,omdb.thriller,omdb.adventure,omdb.horror,omdb.fantasy,omdb.crime,omdb.romance,omdb.animation).all()
+
+    session.close()
+    
+    genres = {
         "drama": 0,
         "comedy": 0,
         "action": 0,
@@ -68,49 +73,54 @@ def genre_count():
         "animation": 0
     }
 
-    with open('model_input.csv', 'r') as csv_file:
-        model = csv.reader(csv_file, delimiter=',')
-        next(model)
-
-        for row in model:
-            if row[1] == "1":
-                count["drama"] += 1
-            if row[2] == "1":
-                count["comedy"] += 1
-            if row[3] == "1":
-                count["action"] += 1
-            if row[4] == "1":
-                count["thriller"] += 1
-            if row[5] == "1":
-                count["adventure"] += 1
-            if row[6] == "1":
-                count["horror"] += 1
-            if row[7] == "1":
-                count["fantasy"] += 1
-            if row[8] == "1":
-                count["crime"] += 1
-            if row[9] == "1":
-                count["romance"] += 1
-            if row[1] == "1":
-                count["animation"] += 1       
-
-    return count
-
-
-@app.route("/api/v1.0/word-count")
-def word_count():
-
-    word_counter = []
-    with open('model_input.csv', 'r') as csv_file:
-        model = csv.reader(csv_file, delimiter=',')
-        next(model)
-
-        # word_counter = [len(row[0].split() for row in model]
-        for row in model:
-            words = row[0].split()
-            word_counter.append(len(words))
+    for drama, comedy, action, thriller, adventure, horror, fantasy, crime, romance, animation in results:
+        if drama == 1:
+            genres["drama"] += 1
+        if comedy == 1:
+            genres["comedy"] += 1
+        if action == 1:
+            genres["action"] += 1
+        if thriller == 1:
+            genres["thriller"] += 1
+        if adventure == 1:
+            genres["adventure"] += 1
+        if horror == 1:
+            genres["horror"] += 1
+        if fantasy == 1:
+            genres["fantasy"] += 1
+        if crime == 1:
+            genres["crime"] += 1
+        if romance == 1:
+            genres["romance"] += 1
+        if animation == 1:
+            genres["animation"] += 1
     
-    return jsonify(word_counter)
+    return genres
+     
+
+@app.route("/api/v1.0/movie-info")
+def movie_info():
+
+    session = Session(engine)
+    results = session.query(omdb.title,omdb.genre,omdb.plot).all()
+
+    session.close()
+    
+    movie_info = []
+    for title, genre, plot in results:
+        movies_dict = {}
+        movies_dict["title"] = title
+        movies_dict["genre"] = genre.split(", ")
+        movies_dict["plot_word_count"] = len(plot.split())
+        movie_info.append(movies_dict)
+
+    return jsonify(movie_info)
+
+'''{
+   title: "Frozen",
+   genre: ["Animation", "Comedy"],
+   plot_word_count: 50
+}'''
 
 if __name__ == "__main__":
     app.run(debug=True)
